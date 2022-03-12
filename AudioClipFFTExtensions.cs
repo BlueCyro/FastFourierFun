@@ -37,6 +37,7 @@ public static class AudioClipFFTExtensions
         int Read = 0;
         int Samples = asset.Data.SampleCount;
         int Channels = asset.Data.ChannelCount;
+        int SampleRate = asset.Data.SampleRate;
         double Duration = asset.Data.Duration;
         var fftProvider = new FftProvider(1, (FftSize)FFTSliceLength);
         int ChunkSize = FFTSliceLength * 2;
@@ -87,22 +88,17 @@ public static class AudioClipFFTExtensions
                     UniLog.Log("FFT Error: " + e.Message);
                 }
                 
-                float[] avg = new float[FFTSliceLength];
-                for (int j = 0; j < Channels; j++)
+                float[] max = new float[FFTSliceLength];
+                for (int j = 0; j < FFTSliceLength; j++)
                 {
-                    for (int k = 0; k < FFTSliceLength; k++)
-                    {
-                        avg[k] += chans[j][k];
-                    }
+                    max[j] = chans.Select(c => c[j]).Max();
                 }
-                for (int k = 0; k < FFTSliceLength; k++)
-                {
-                    avg[k] /= Channels;
-                }
+
+
 
                 for(int j = 0; j < FFTSliceLength; j++)
                 {
-                    FFTFragments[j].InsertKeyFrame(Math.Abs(avg[j]), i / (float)Samples * (float)Duration, KeyframeInterpolation.Linear);
+                    FFTFragments[j].InsertKeyFrame(Math.Abs(max[j]), i / (float)Samples * (float)Duration, KeyframeInterpolation.Linear);
                 }
             }
         }

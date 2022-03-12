@@ -15,7 +15,7 @@
 
 ## Notes
 
-- Note that for now the FFT result is averaged depending on how many channels the audio clip has. (E.g. 2 channels - FFT result of both channels is averaged together)
+- Note that for now the FFT result is the maximum amplitude of the results.  (E.g. 2 channels - per FFT slice, the result is the maximum of the channels' amplitudes.)
 - The FFT is also represented as an absolute value, so you're not gonna get any negatives in there.
 - I'd also recommend getting the absolute value of the FFT result anyways, as this may very well change in the future.
 ## Limitations
