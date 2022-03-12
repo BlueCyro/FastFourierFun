@@ -28,3 +28,6 @@
 - This mod implements an extension to AudioX datatypes so you can simply call `AudioX.GetFFTAnimation(int FFTBucketSize)` to get the FFT animation clip.
 - I highly recommend using this function in an asynchronous manner, as it will take a while to compute the FFT.
 - Same goes for actually writing it into a StaticAnimationProvider, that takes the longest.
+<p>&nbsp;</p>
+
+- This mod was developed in vscode, not visual studio as most other mods are.
