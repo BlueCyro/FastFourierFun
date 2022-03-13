@@ -84,7 +84,7 @@ public class ModClass : NeosMod
 
 			UniLog.Log("Audioclip contents: " + audioClip.ToString());
 			AudioClip asset = audioClip.Asset;
-			AnimX anim = await Task.Run(() => asset.GetFFTAnimation(2048));
+			AnimX anim = await Task.Run(() => asset.GetFFTAnimation(1024));
 			
 			LocalDB dB = __instance.World.Engine.LocalDB;
 
@@ -108,7 +108,7 @@ public class ModClass : NeosMod
 
 				var audioClipVar = AssetStore.AttachComponent<DynamicReferenceVariable<IAssetProvider<AudioClip>>>();
 				audioClipVar.VariableName.Value = "AudioClip";
-				audioClipVar.Reference.Target = audioClip;
+				audioClipVar.Reference.Target = AssetStore.DuplicateComponent<StaticAudioClip>(audioClip, false);
 
 				
 

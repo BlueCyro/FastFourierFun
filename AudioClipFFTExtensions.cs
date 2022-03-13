@@ -88,17 +88,23 @@ public static class AudioClipFFTExtensions
                     UniLog.Log("FFT Error: " + e.Message);
                 }
                 
-                float[] max = new float[FFTSliceLength];
+                float[] result = new float[FFTSliceLength];
                 for (int j = 0; j < FFTSliceLength; j++)
                 {
-                    max[j] = chans.Select(c => c[j]).Max();
+                    for (int k = 0; k < Channels; k++)
+                    {
+                        result[j] += chans[k][j];
+                    }
                 }
 
-
+                for (int j = 0; j < FFTSliceLength; j++)
+                {
+                    result[j] /= Channels;
+                }
 
                 for(int j = 0; j < FFTSliceLength; j++)
                 {
-                    FFTFragments[j].InsertKeyFrame(Math.Abs(max[j]), i / (float)Samples * (float)Duration, KeyframeInterpolation.Linear);
+                    FFTFragments[j].InsertKeyFrame(Math.Abs(result[j]), i / (float)Samples * (float)Duration, KeyframeInterpolation.Linear);
                 }
             }
         }
