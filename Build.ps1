@@ -1,19 +1,20 @@
 dotnet build
 
 $dir = Split-Path -Path (Get-Location) -Leaf
-$NeosDir = "C:\Neos\app\"
+$NeosDir = "C:\Program Files (x86)\Steam\steamapps\common\NeosVR\"
 $NeosExe = "$NeosDir\Neos.exe"
 $AssemblyLocation = "$(Get-Location)\bin\Debug\net4.7.2\$dir.dll"
+$LogFolder = "$NeosDir\Logs\"
 $nml_mods = "$NeosDir\nml_mods\"
 $dllpath = "$nml_mods\$dir.dll"
 
 Copy-Item -Force -Path $AssemblyLocation -Destination $nml_mods
 
 $LogJob = Start-Job {Start-Sleep -Seconds 8
-    Get-Content "C:\Neos\app\Logs\$(Get-ChildItem -Path C:\Neos\app\Logs | Sort-Object LastWriteTime | Select-Object -last 1)" -Wait
+    Get-Content "$using:LogFolder\$(Get-ChildItem -Path $using:LogFolder | Sort-Object LastWriteTime | Select-Object -last 1)" -Wait
 }
 
-$NeosProc = Start-Process -FilePath $NeosExe -WorkingDirectory $NeosDir -ArgumentList "-DontAutoOpenCloudHome", "-SkipIntroTutorial", "-Screen", "-LoadAssembly `"C:\Neos\app\Libraries\NeosModLoader.dll`"" -passthru
+$NeosProc = Start-Process -FilePath $NeosExe -WorkingDirectory $NeosDir -ArgumentList "-DontAutoOpenCloudHome", "-SkipIntroTutorial", "-Screen", "-LoadAssembly `"$NeosDir\Libraries\NeosModLoader.dll`"" -passthru
 
 while(!$NeosProc.HasExited) {
     Start-Sleep -Seconds 1

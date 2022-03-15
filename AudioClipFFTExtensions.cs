@@ -31,82 +31,99 @@ public static class AudioClipFFTExtensions
         }
     }
 
-    public static AnimX GetFFTAnimation(this AudioClip asset, int FFTSliceLength)
+
+    /// <param name="FFTSliceLength">The sample size of the FFT. Also will read the clip every <paramref name="FFTSliceLength"/> samples.</param>
+    /// <param name="ReadMultiplier">Incrementing this beyond 1 will increase the frequency with which the clip is read. (1 = every FFTSliceLength samples. 2 = every FFTSliceLength / 2 samples, etc.)</param>
+    /// <param name="SliceTo">If greater than zero, will slice the first X amount of samples from the resulting FFT. This helps when you want resolution, but don't need the entire result. E.g. For a visualizer.</param> 
+    /// <summary>This method computes the FFT of the audioclip and returns the result as an animation.</summary>
+    /// <returns>AnimX</returns>
+    public static AnimX GetFFTAnimation(this AudioClip asset, Sync<string> progress, int FFTSliceLength = 2048, int ReadMultiplier = 1, int SliceTo = 0)
     {
+        SliceTo = SliceTo == 0 ? FFTSliceLength : SliceTo;
         double Position = 0;
         int Read = 0;
         int Samples = asset.Data.SampleCount;
         int Channels = asset.Data.ChannelCount;
         int SampleRate = asset.Data.SampleRate;
         double Duration = asset.Data.Duration;
+        World world = Engine.Current.WorldManager.FocusedWorld;
+        // Given the information about the clip, the FFTSliceLength, and the ReadMultiplier, we can calulate the interval in milliseconds between each keyframe of the animation.
+        float AnimationInterval = (float)(FFTSliceLength / (double)SampleRate) / (float)ReadMultiplier * 0.001f;
+        UniLog.Log("Animation Interval: " + AnimationInterval + " or " + 1 / AnimationInterval + " times per second");
+
         var fftProvider = new FftProvider(1, (FftSize)FFTSliceLength);
-        int ChunkSize = FFTSliceLength * 2;
+        int ChunkSize = FFTSliceLength * Channels;
+
         float[] samples = new float[ChunkSize];
 
         AnimX anim = new AnimX((float)Duration, "FFT");
-        CurveFloatAnimationTrack[] FFTFragments = new CurveFloatAnimationTrack[FFTSliceLength];
+        List<RawFloatAnimationTrack> FFTFragments = new List<RawFloatAnimationTrack>();
 
         UniLog.Log("Samples: " + Samples);
         
-        for(int i = 0; i < FFTSliceLength; i++)
+        for(int i = 0; i < SliceTo; i++)
         {
-            FFTFragments[i] = anim.AddTrack<CurveFloatAnimationTrack>();
+            FFTFragments.Add(anim.AddTrack<RawFloatAnimationTrack>());
+            FFTFragments[i].Interval = AnimationInterval;
             FFTFragments[i].Node = i.ToString();
             FFTFragments[i].Property = "Amplitude";
         }
 
-        for(int i = 0; i < Samples; i++)
+        try
         {
-
-            if (i % (Samples / 10) == 0)
+            for(int i = 0; i < Samples; i++)
             {
-                UniLog.Log("Progress: " + Math.Round((i / (float)Samples) * 100) + "%");
-            }
 
-            if (i % FFTSliceLength == 0)
-            {
-                Read = asset.Data.ReadAs(samples, Position, 1, false);
-
-                Position += Read;
-
-                List<float[]> chans = new List<float[]>();
-                for (int j = 0; j < Channels; j++)
+                if (i % (Samples / 100) == 0 && progress != null)
                 {
-                    chans.Add(samples.Where((v,k) => k % Channels == j).ToArray());
+                    world.RunSynchronously(() => {
+                        progress.Value = "Importing... " + (float)Math.Round((i / (float)Samples) * 100) + "%";
+                        UniLog.Log("Progress: " + progress.Value);
+                    });   
                 }
 
-                try 
+                if (i % (FFTSliceLength / ReadMultiplier ) == 0)
                 {
+                    Read = asset.Data.ReadAs(samples, Position, 1, false);
+
+                    Position += Read / ReadMultiplier;
+
+                    List<float[]> chans = new List<float[]>();
+                    for (int j = 0; j < Channels; j++)
+                    {
+                        chans.Add(samples.Where((v,k) => k % Channels == j).ToArray());
+                    }
+                    
                     for (int j = 0; j < Channels; j++)
                     {
                         fftProvider.Add(chans[j], Read);
                         fftProvider.GetFftData(chans[j]);
                     }
-                }
-                catch (Exception e)
-                {
-                    UniLog.Log("FFT Error: " + e.Message);
-                }
-                
-                float[] result = new float[FFTSliceLength];
-                for (int j = 0; j < FFTSliceLength; j++)
-                {
-                    for (int k = 0; k < Channels; k++)
+                    
+                    float[] result = new float[SliceTo];
+
+                    // Average all channels together
+                    for (int j = 0; j < Channels; j++)
                     {
-                        result[j] += chans[k][j];
+                        for (int k = 0; k < SliceTo; k++)
+                        {
+                            result[k] += chans[j][k];
+                        }
+                    }
+
+                    for (int j = 0; j < SliceTo; j++)
+                    {
+                        var track = FFTFragments[j];
+                        track.AppendFrame(Math.Abs(result[j]) / Channels);
                     }
                 }
-
-                for (int j = 0; j < FFTSliceLength; j++)
-                {
-                    result[j] /= Channels;
-                }
-
-                for(int j = 0; j < FFTSliceLength; j++)
-                {
-                    FFTFragments[j].InsertKeyFrame(Math.Abs(result[j]), i / (float)Samples * (float)Duration, KeyframeInterpolation.Linear);
-                }
             }
+        }
+        // Catch and print stack trace
+        catch (Exception e)
+        {
+            UniLog.Log(e.Message);
+            UniLog.Log(e.StackTrace);
         }
         return anim;
     }
