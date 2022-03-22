@@ -13,6 +13,10 @@
 ## Usage
 
 - Simply grab a StaticAudioClip or imported audio clip with the LogiX tip and hit the "Get FFT" button on your context menu.
+- You will be presented with four buttons. The top left most one is to set the bin size. 
+- The top right will increase the read frequency (may help with slowly updating FFT due to large bin sizes)
+- The bottom left will of course get the FFT
+- The botton right will slice (throw away) any FFT slice past what is represented on the button.
 - It will take a little while to compute the FFT, but once it's done you will receive an item with an animation clip on it. Each track on the clip is a value from the FFT in ascending order. 
 
 ## Notes
