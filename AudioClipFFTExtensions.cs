@@ -39,7 +39,8 @@ public static class AudioClipFFTExtensions
     /// <returns>AnimX</returns>
     public static AnimX GetFFTAnimation(this AudioClip asset, Sync<string> progress, int FFTSliceLength = 2048, int ReadMultiplier = 1, int SliceTo = 0)
     {
-        SliceTo = SliceTo == 0 ? FFTSliceLength : SliceTo;
+        UniLog.Log("Getting FFT Animation");
+        SliceTo = SliceTo == 0 || SliceTo >= FFTSliceLength ? FFTSliceLength : SliceTo;
         double Position = 0;
         int Read = 0;
         int Samples = asset.Data.SampleCount;
@@ -48,7 +49,7 @@ public static class AudioClipFFTExtensions
         double Duration = asset.Data.Duration;
         World world = Engine.Current.WorldManager.FocusedWorld;
         // Given the information about the clip, the FFTSliceLength, and the ReadMultiplier, we can calulate the interval in milliseconds between each keyframe of the animation.
-        float AnimationInterval = (float)(FFTSliceLength / (double)SampleRate) / (float)ReadMultiplier * 0.001f;
+        float AnimationInterval = (float)(FFTSliceLength / (double)SampleRate) / (float)ReadMultiplier;
         UniLog.Log("Animation Interval: " + AnimationInterval + " or " + 1 / AnimationInterval + " times per second");
 
         var fftProvider = new FftProvider(1, (FftSize)FFTSliceLength);
@@ -73,13 +74,17 @@ public static class AudioClipFFTExtensions
         {
             for(int i = 0; i < Samples; i++)
             {
-
-                if (i % (Samples / 100) == 0 && progress != null)
+                string numval = ((i / (float)Samples) * 100f).ToString("0.00");
+                if (i % (Samples / 10000) == 0 && progress != null)
                 {
                     world.RunSynchronously(() => {
-                        progress.Value = "Importing... " + (float)Math.Round((i / (float)Samples) * 100) + "%";
-                        UniLog.Log("Progress: " + progress.Value);
+                        progress.Value = String.Format("Importing... {0}%", numval);
                     });   
+                }
+
+                if (i % (Samples / 10) == 0)
+                {
+                    UniLog.Log(String.Format("Calculating FFT: {0}%", numval));
                 }
 
                 if (i % (FFTSliceLength / ReadMultiplier ) == 0)
@@ -102,7 +107,7 @@ public static class AudioClipFFTExtensions
                     
                     float[] result = new float[SliceTo];
 
-                    // Average all channels together
+                    // Average all results together
                     for (int j = 0; j < Channels; j++)
                     {
                         for (int k = 0; k < SliceTo; k++)
