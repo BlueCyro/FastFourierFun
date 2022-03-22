@@ -1,6 +1,6 @@
 # Fast fourier fun
 
-#DISCLAIMER: This is a work in progress. It is not yet ready for production use. Any and all implemention of features by this mod are subject to change at any time without warning.
+# DISCLAIMER: This is a work in progress. It is not yet ready for production use. Any and all implemention of features by this mod are subject to change at any time without warning.
 
 ### That being said; this is a [NeosModLoader](https://github.com/zkxs/NeosModLoader) mod that lets you get FFT values out of an audio clip.
 
