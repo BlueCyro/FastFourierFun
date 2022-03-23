@@ -52,10 +52,12 @@ public static class AudioClipFFTExtensions
         float AnimationInterval = (float)(FFTSliceLength / (double)SampleRate) / (float)ReadMultiplier;
         UniLog.Log("Animation Interval: " + AnimationInterval + " or " + 1 / AnimationInterval + " times per second");
 
-        var fftProvider = new FftProvider(1, (FftSize)FFTSliceLength);
+        // var fftProvider = new FftProvider(1, (FftSize)FFTSliceLength);
+        var fftProvider = new FftProvider(Channels, (FftSize)FFTSliceLength);
         int ChunkSize = FFTSliceLength * Channels;
 
         float[] samples = new float[ChunkSize];
+        float[] resultBuffer = new float[FFTSliceLength];
 
         AnimX anim = new AnimX((float)Duration, "FFT");
         List<RawFloatAnimationTrack> FFTFragments = new List<RawFloatAnimationTrack>();
@@ -93,20 +95,26 @@ public static class AudioClipFFTExtensions
 
                     Position += Read / ReadMultiplier;
 
+                    /*
                     List<float[]> chans = new List<float[]>();
                     for (int j = 0; j < Channels; j++)
                     {
                         chans.Add(samples.Where((v,k) => k % Channels == j).ToArray());
                     }
-                    
+                    */
+
+                    fftProvider.Add(samples, Read);
+                    fftProvider.GetFftData(resultBuffer);
+                    /*
                     for (int j = 0; j < Channels; j++)
                     {
                         fftProvider.Add(chans[j], Read);
                         fftProvider.GetFftData(chans[j]);
                     }
-                    
+                    */
                     float[] result = new float[SliceTo];
 
+                    /*
                     // Average all results together
                     for (int j = 0; j < Channels; j++)
                     {
@@ -115,7 +123,7 @@ public static class AudioClipFFTExtensions
                             result[k] += chans[j][k];
                         }
                     }
-
+                    */
                     for (int j = 0; j < SliceTo; j++)
                     {
                         var track = FFTFragments[j];
