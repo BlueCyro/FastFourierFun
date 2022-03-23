@@ -13,7 +13,13 @@
 ## Usage
 
 - Simply grab a StaticAudioClip or imported audio clip with the LogiX tip and hit the "Get FFT" button on your context menu.
-- It will take a little while to compute the FFT, but once it's done you will receive an item with an animation clip on it. Each track on the clip is a value from the FFT in ascending order. 
+- You will be presented with four buttons. The top left most one is to set the bin size. 
+- The top right will increase the read frequency (may help with slowly updating FFT due to large bin sizes)
+- The bottom left will of course get the FFT
+- The botton right will slice (throw away) any FFT slice past what is represented on the button.
+- It will take a little while to compute the FFT, but once it's done you will receive an item with an animation clip on it. Each track on the clip is a value from the FFT in ascending order.
+- In logix, you may then sample the FFT by sampling the animation clip at a given position for the sound you ran through it
+- Each track is a slice of the FFT represented as a float. (If you're making visualizers, I recommend multiplying the amplitude by log10 or so as you for loop through the tracks)
 
 ## Notes
 
@@ -26,7 +32,7 @@
 - *Please don't use an animator to play the clip, it will be very laggy.* I recommend only sampling it with LogiX.
 
 
-## For developers
+## For mod developers
 - This mod implements an extension to AudioX datatypes so you can simply call:
 - `AudioX.GetFFTAnimation(int FFTBucketSize)` to get the FFT animation clip. (This must be a power of 2)
 - I highly recommend using this function in an asynchronous manner, as it will take a while to compute the FFT.
