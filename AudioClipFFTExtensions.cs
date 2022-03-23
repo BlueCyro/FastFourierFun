@@ -112,7 +112,7 @@ public static class AudioClipFFTExtensions
                         fftProvider.GetFftData(chans[j]);
                     }
                     */
-                    float[] result = new float[SliceTo];
+                    //float[] result = new float[SliceTo];
 
                     /*
                     // Average all results together
@@ -127,7 +127,7 @@ public static class AudioClipFFTExtensions
                     for (int j = 0; j < SliceTo; j++)
                     {
                         var track = FFTFragments[j];
-                        track.AppendFrame(Math.Abs(result[j]) / Channels);
+                        track.AppendFrame(Math.Abs(resultBuffer[j]));
                     }
                 }
             }
