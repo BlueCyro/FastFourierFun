@@ -17,7 +17,7 @@ public class Fourier : NeosMod
 {
     public override string Author => "Cyro";
     public override string Name => "Fast Fourier Fun";
-    public override string Version => "1.2.0";
+    public override string Version => "1.2.1";
 	static FftSize FFTSize = FftSize.Fft2048;
 
     public override void OnEngineInit()
